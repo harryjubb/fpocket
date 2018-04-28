@@ -175,7 +175,7 @@ void assign_energies(s_grid *g_elec, s_grid *g_vdw, s_pocket *p, s_pdb *pdb) {
         }
     }
 
-    return (NULL);
+    return;
 }
 
 void set_alpha_sphere_electrostatic_energy(s_vvertice *v, s_grid *g_elec) {
@@ -242,7 +242,7 @@ void set_energies_to_grid_point(int cx, int cy, int cz, s_atm **atom_ids, int n_
             if (d < 1.4) {
                 g_vdw->gridvalues[cx][cy][cz] += 100.0; //try with 0 in case of MD here??
                 g_elec->gridvalues[cx][cy][cz] += 0.0;
-                return (NULL);
+                return;
             } else {
 
                 sigma = sqrt((atom_ids[i]->ff_radius + 1.4) * mm_atom_type_ST[n_mm_atom_type - 1].radius); //by default compare to carbon as probe on the grid
@@ -266,7 +266,7 @@ void set_energies_to_grid_point(int cx, int cy, int cz, s_atm **atom_ids, int n_
 //        g_vdw->gridvalues[cx][cy][cz] = 1000.0;
 //        g_elec->gridvalues[cx][cy][cz] = 0.0;
 //    }
-    return (NULL);
+    return;
 }
 
 void assign_mean_energies(s_grid *g,int devider){
