@@ -1,5 +1,13 @@
 #include "../headers/mdpocket.h"
+/*
+ * Copyright <2012> <Vincent Le Guilloux,Peter Schmidtke, Pierre Tuffery>
+ * Copyright <2013-2018> <Peter Schmidtke, Vincent Le Guilloux>
 
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ */
 /*
 
 ## GENERAL INFORMATION
@@ -36,35 +44,6 @@
  */
 
 
-/*
-    COPYRIGHT
-
-    Peter Schmidtke, hereby
-        claims all copyright interest in the program “mdpocket” (which
-        performs protein cavity detection on multiple conformations of proteins) 
-        written by Peter Schmidtke.
-
-    Peter Schmidtke      01 Decembre 2012
-
- *     GNU GPL
-
-    This file is part of the fpocket package.
-
-    fpocket is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    fpocket is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with fpocket.  If not, see <http://www.gnu.org/licenses/>.
-
- **/
-
 static molfile_plugin_t *api;
 
 static int register_cb(void *v, vmdplugin_t *p) {
@@ -93,7 +72,13 @@ void mdpocket_detect(s_mdparams *par) {
     int i = 0, j, k;
 
     int n_snapshots = 0;
-    FILE * fout[6]; /*output file handles*/
+
+    FILE * fout1;
+    FILE * fout2;
+    FILE * fout3;
+    FILE * fout4;
+    FILE * fout5;
+    FILE * fout6;
     FILE *timef; /*just an output for performance measurements*/
     c_lst_pockets *pockets = NULL; /*tmp handle for pockets*/
     s_mdgrid *freqgrid = NULL; /*init mdgrid structure*/
@@ -105,6 +90,7 @@ void mdpocket_detect(s_mdparams *par) {
     FILE *cf; /*file handle for current bfact coloured file to write*/
     char cf_name[350] = "";
     char pdb_code[350] = "";
+
 
     if (!strncmp(par->traj_format, "net", 3)) {
         molfile_netcdfplugin_init();
@@ -135,18 +121,19 @@ void mdpocket_detect(s_mdparams *par) {
     molfile_gromacsplugin_register(NULL, register_cb);
     molfile_lammpsplugin_init();
     molfile_lammpsplugin_register(NULL, register_cb);*/
-
+ 
 
     if (par) {
         /* Opening output files */
         //fout[0] = fopen(par->f_pqr,"w") ;   /*concat pqr output*/
-        fout[1] = fopen(par->f_freqdx, "w"); /*grid dx output*/
-        fout[2] = fopen(par->f_densdx, "w"); /*grid dx output*/
-        fout[3] = fopen(par->f_freqiso, "w"); /*iso pdb output*/
-        fout[4] = fopen(par->f_densiso, "w"); /*iso pdb output*/
-        fout[5] = fopen(par->f_appdb, "w"); /*all atom -> pocket density output on bfactors*/
+        fout1 = fopen(par->f_freqdx, "w"); /*grid dx output*/
+        fout2 = fopen(par->f_densdx, "w"); /*grid dx output*/
+        fout3 = fopen(par->f_freqiso, "w"); /*iso pdb output*/
+        fout4 = fopen(par->f_densiso, "w"); /*iso pdb output*/
+        fout5 = fopen(par->f_appdb, "w"); /*all atom -> pocket density output on bfactors*/
         timef = fopen("time.txt", "w"); /*performance measurement output*/
-        if (fout[1] && fout[2] && fout[3] && fout[4] && fout[5]) {
+        if (fout1 && fout2 && fout3 && fout4 && fout5) {
+          
             //mdconcat=init_md_concat();  /*alloc & init of the mdconcat structure*/
             clock_t b, e; /*for the calculation time measurements*/
             if (par->nfiles) {
@@ -300,7 +287,7 @@ void mdpocket_detect(s_mdparams *par) {
             } else cpdb = open_pdb_file(par->fpar->pdb_path,par); /*open again the first snapshot*/
             rpdb_read(cpdb, NULL, M_DONT_KEEP_LIG, 0,par->fpar);
             project_grid_on_atoms(densgrid, cpdb);
-            write_first_bfactor_density(fout[5], cpdb);
+            write_first_bfactor_density(fout5, cpdb);
             free_pdb_atoms(cpdb);
             if (par->bfact_on_all) {
                 for (i = 0; i < par->nfiles; i++) {
@@ -323,9 +310,15 @@ void mdpocket_detect(s_mdparams *par) {
 
             //   mdconcat->n_snapshots=par->nfiles;      /*updata a variable in the mdconcat structure*/
             //   mdgrid=calculate_md_grid(mdconcat);     /*calculate the actual md grid*/
-            write_md_grid(freqgrid, fout[1], fout[3], par, M_MDP_DEFAULT_ISO_VALUE_FREQ); /*write the grid to a vmd readable dx file*/
-            write_md_grid(densgrid, fout[2], fout[4], par, M_MDP_DEFAULT_ISO_VALUE_DENS); /*write the grid to a vmd readable dx file*/
-            for (i = 1; i < 6; i++) fclose(fout[i]); /*close all output file handles*/
+
+       
+            write_md_grid(freqgrid, fout1, fout3, par, M_MDP_DEFAULT_ISO_VALUE_FREQ); /*write the grid to a vmd readable dx file*/
+            write_md_grid(densgrid, fout2, fout4, par, M_MDP_DEFAULT_ISO_VALUE_DENS); /*write the grid to a vmd readable dx file*/
+            fclose(fout1);
+            fclose(fout2);
+            fclose(fout3);
+            fclose(fout4);
+            fclose(fout5);
 
             /*free the memory for the grids noz*/
             free_md_grid(freqgrid);
@@ -340,7 +333,7 @@ void mdpocket_detect(s_mdparams *par) {
             }
             else */
             for (i = 1; i < 6; i++) {
-                if (!fout[i]) {
+                if (!fout1) {
                     fprintf(stdout, "! Output file couldn't be opened.\n");
                 }
             }
@@ -389,10 +382,11 @@ void mdpocket_characterize(s_mdparams *par) {
     char elecgrid_path[350] = "";
     FILE *f_out_vdwgrid = NULL;
     FILE *f_out_elecgrid = NULL;
+/*
     if (!strncmp(par->traj_format, "net", 3)) {
         molfile_netcdfplugin_init();
         molfile_netcdfplugin_register(NULL, register_cb);
-    }
+    }*/
     if (!strncmp(par->traj_format, "dcd", 3)) {
         molfile_dcdplugin_init();
         molfile_dcdplugin_register(NULL, register_cb);
